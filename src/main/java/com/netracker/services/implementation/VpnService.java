@@ -6,45 +6,60 @@ import com.netracker.mapstruct.VpnStruct;
 import com.netracker.model.Vpn;
 import com.netracker.repository.VpnBaseRepository;
 import com.netracker.services.IVpnService;
+import com.netracker.validation.annotations.VpnExists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
+
+import javax.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 
+
+@Slf4j
 @Service
+@Validated
 public class VpnService implements IVpnService {
+    //TODO добавить нормальное логирование http запросов
 
     private final VpnBaseRepository vpnBaseRepository;
-    private final VpnStruct vpnStruct;
+    private final VpnStruct vpnStruct = VpnStruct.INSTANCE;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public VpnService(VpnBaseRepository vpnBaseRepository, VpnStruct vpnStruct) {
+    public VpnService(VpnBaseRepository vpnBaseRepository) {
         this.vpnBaseRepository = vpnBaseRepository;
-        this.vpnStruct = vpnStruct;
     }
 
     @Override
-    public VpnDto findById(long id){
+    public VpnDto findById(@VpnExists UUID id){
+        log.info("Start to getting of vpn by id = {}", id);
         return vpnStruct.toDto(vpnBaseRepository.findById(id).get());
     }
     @Override
-    public void deleteById(long id){
+    public void deleteById(@VpnExists UUID id){
+        log.info("Start to deleting of vpn by id = {}", id);
         vpnBaseRepository.deleteById(id);
     }
 
     @Override
-    public VpnDto create(VpnDto vpnDto){
+    public VpnDto create(@Valid VpnDto vpnDto){
+        log.info("Start to creating new vpn = {}", vpnDto.toString());
         return vpnStruct.toDto(vpnBaseRepository.save(vpnStruct.fromDto(vpnDto)));
     }
     @Override
     public List<VpnDto> getList(){
-        return vpnStruct.toDto(Lists.newArrayList(vpnBaseRepository.findAll()));
+        List<VpnDto> vpnDto = vpnStruct.toDto(Lists.newArrayList(
+                vpnBaseRepository.findAll()));
+        log.info("Start to getting list vpn = {}", vpnDto.toString());
+        return vpnDto;
     }
 
     @Override
-    public VpnDto updateById(long id, VpnDto vpnDto) {
-        Vpn newVpn = vpnBaseRepository.findById(id).get();
+    public VpnDto updateById(@VpnExists UUID id, @Valid VpnDto vpnDto) {
+        log.info("Start to updating vpn = {}", vpnDto.toString());
+        Vpn newVpn = new Vpn();
         newVpn.setExpirationDate(vpnDto.getExpirationDate());
         newVpn.setTitle(vpnDto.getTitle());
         newVpn.setPassword(vpnDto.getPassword());
@@ -56,4 +71,8 @@ public class VpnService implements IVpnService {
         vpnBaseRepository.deleteAll();
     }
 
+    @Override
+    public boolean existsById(UUID id) {
+        return vpnBaseRepository.existsById(id);
+    }
 }

@@ -3,35 +3,31 @@ package com.netracker.model;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-
+import java.util.UUID;
 
 
 @Entity
-@Table(name = "vpn")
+@Table(name = "vpn", schema = "public")
 public class Vpn {
-    private long vpnServiceId;
+
+    private UUID vpnServiceId;
     private String title;
     private Timestamp expirationDate;
     private String password;
 
     @Id
-    @Column(name = "vpn_id")
-    @GeneratedValue(strategy=GenerationType.AUTO, generator="VPN_SEQ")
-    @SequenceGenerator(name="VPN_SEQ", sequenceName="VPN_SEQ",allocationSize=1)
-    public long getVpnServiceId() {
+    @Column(name = "vpn_id", nullable = false)
+    @GeneratedValue
+    public UUID getVpnServiceId() {
         return vpnServiceId;
     }
 
-    public void setVpnServiceId(long vpnServiceId) {
-        this.vpnServiceId = vpnServiceId;
-    }
-
-    public void setVpnServiceId(int vpnServiceId) {
+    public void setVpnServiceId(UUID vpnServiceId) {
         this.vpnServiceId = vpnServiceId;
     }
 
     @Basic
-    @Column(name = "title")
+    @Column(name = "title", nullable = false, length = 30)
     public String getTitle() {
         return title;
     }
@@ -41,7 +37,7 @@ public class Vpn {
     }
 
     @Basic
-    @Column(name = "expiration_date")
+    @Column(name = "expiration_date", nullable = false)
     public Timestamp getExpirationDate() {
         return expirationDate;
     }
@@ -51,7 +47,7 @@ public class Vpn {
     }
 
     @Basic
-    @Column(name = "password")
+    @Column(name = "password", nullable = false, length = 20)
     public String getPassword() {
         return password;
     }
